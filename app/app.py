@@ -4,6 +4,7 @@ import os
 from ortools.sat.python import cp_model
 import sys
 import math
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -24,9 +25,15 @@ def upload_file():
     
     if file.filename == '':
         return 'No selected file'
-    
+    print(request.form)
     if file:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        study_code = "UNKNOWN"
+        if 'study_code' in request.form:
+            study_code = request.form['study_code']
+
+        now = datetime.now()
+        dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], f"{study_code}_{dt_string}_{file.filename}" )
         file.save(filepath)
         
         # Process the Excel file
