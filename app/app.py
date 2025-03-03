@@ -33,7 +33,8 @@ def upload_file():
 
         now = datetime.now()
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], f"{study_code}_{dt_string}_{file.filename}" )
+        MYDIR = os.path.dirname(__file__)
+        filepath = os.path.join(MYDIR + "/" + app.config['UPLOAD_FOLDER'], f"{study_code}_{dt_string}_{file.filename}" )
         file.save(filepath)
         
         # Process the Excel file
