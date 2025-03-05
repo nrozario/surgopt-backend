@@ -213,9 +213,9 @@ def process_excel(df):
     # Print output to console and excel sheet
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
         print("Success!")
-        rows = ["Number of days", "Number of cases", "Original overtime frequency", "Original undertime frequency", "Model overtime frequency",
-                "Model undertime frequency", "Model cases achieved", "Original Overtime Minutes Used", "Model Overtime Minutes Used",
-                "Original Overtime Cost", "Model Overtime Cost", "Original OR minutes used", "Model OR minutes used", "", "Procedure Type"] + procedureTypes
+        rows = ["Number of days", "Number of cases", "Original overtime frequency (%)", "Original undertime frequency (%)", "Model overtime frequency (%)",
+                "Model undertime frequency (%)", "Model cases achieved (%)", "Original Overtime Minutes Used", "Model Overtime Minutes Used",
+                "Original Overtime Cost", "Model Overtime Cost", "Original OR minutes used (%)", "Model OR minutes used (%)", "", "Procedure Type"] + procedureTypes
 
         dashboard = pd.DataFrame(index=rows,
                                 columns=["A", "B", "C", ])
@@ -231,13 +231,13 @@ def process_excel(df):
         dashboard.at["Number of cases", "B"] = len(rawExpectedTimes)
 
         print("number of cases: ", len(rawExpectedTimes))
-        dashboard.at["Original overtime frequency", "B"] = round(currentOvertimeCount / count, 2)
+        dashboard.at["Original overtime frequency (%)", "B"] = 100 * round(currentOvertimeCount / count, 2)
         print("current overtime frequency: %.0f%%" % (100 * currentOvertimeCount / count))
-        dashboard.at["Original undertime frequency", "B"] = round(currentUndertimeCount / count, 2)
+        dashboard.at["Original undertime frequency (%)", "B"] = 100 * round(currentUndertimeCount / count, 2)
         print("current undertime frequency: %.0f%%" % (100 * currentUndertimeCount / count))
-        dashboard.at["Model overtime frequency", "B"] = round(solver.Value(overtimeCount) / count, 2)
+        dashboard.at["Model overtime frequency (%)", "B"] = 100 * round(solver.Value(overtimeCount) / count, 2)
         print("model overtime frequency: %.0f%%" % (100 * solver.Value(overtimeCount) / count))
-        dashboard.at["Model undertime frequency", "B"] = round(solver.Value(undertimeCount) / count, 2)
+        dashboard.at["Model undertime frequency (%)", "B"] = 100 * round(solver.Value(undertimeCount) / count, 2)
         print("model undertime frequency: %.0f%%" % (100 * solver.Value(undertimeCount) / count))
 
         # ------------------------------------------------------------------------------------
@@ -316,11 +316,11 @@ def process_excel(df):
                         break
 
         print("Cases achieved with machine learning model: %.0f%%" % (100 * modelCases / totalNoCases))
-        dashboard.at["Model cases achieved", "B"] =  round(modelCases / totalNoCases, 2)
+        dashboard.at["Model cases achieved (%)", "B"] =  100 * round(modelCases / totalNoCases, 2)
         print("OR minutes used with original model: %.0f%%" % (100 * originalMinutes / totalMinutes))
-        dashboard.at["Original OR minutes used", "B"] =  round(originalMinutes / totalMinutes, 2)
+        dashboard.at["Original OR minutes used (%)", "B"] =  100 * round(originalMinutes / totalMinutes, 2)
         print("OR minutes used with machine learning model: %.0f%%" % (100 * modelMinutes / totalMinutes))
-        dashboard.at["Model OR minutes used", "B"] = round(modelMinutes / totalMinutes, 2)
+        dashboard.at["Model OR minutes used (%)", "B"] = 100 * round(modelMinutes / totalMinutes, 2)
         return dashboard
     else:
         print("No feasible solution found.")
