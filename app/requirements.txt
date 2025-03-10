@@ -3,3 +3,8 @@ ortools==9.11.4210
 pandas==2.0.3
 gunicorn
 numpy==1.25.1
+boto3
+requests
+openpyxl
+xlsxwriter
+flask_cors

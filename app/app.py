@@ -1,25 +1,39 @@
-from flask import Flask, request, render_template, send_file
+from flask import Flask, request, render_template, jsonify
+from flask_cors import CORS, cross_origin
 import pandas as pd
 import os
 from ortools.sat.python import cp_model
 import sys
 import math
 from datetime import datetime
+import boto3
+import requests
+import io
+
 
 app = Flask(__name__)
+# CORS(app, resources={r"/upload": {"origins": 'https://surgopt.com'}})
+cors = CORS(app)
+# CORS(app, origins='*', supports_credentials=True, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+app.config['CORS_HEADERS'] = ['Content-Type', "Authorization"]
 
 # Upload folder
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+S3_BUCKET = os.environ.get('S3_BUCKET_NAME')
+
 
 @app.route('/')
+@cross_origin()
 def index():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
+@cross_origin()
 def upload_file():
+    print(request)
     if 'file' not in request.files:
-        return 'No file part'
+        return 'No file in request'
     
     file = request.files['file']
     
@@ -28,28 +42,40 @@ def upload_file():
     print(request.form)
     if file:
         study_code = "UNKNOWN"
-        if 'study_code' in request.form:
-            study_code = request.form['study_code']
+        if 'studyCode' in request.form:
+            study_code = request.form['studyCode']
 
         now = datetime.now()
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
         MYDIR = os.path.dirname(__file__)
-        filepath = os.path.join(MYDIR + "/" + app.config['UPLOAD_FOLDER'], f"{study_code}_{dt_string}_{file.filename}" )
-        file.save(filepath)
+
+
+        filename = f"{study_code}_{dt_string}_{file.filename}"
+        # file_url = sign_s3(file, filename, file.content_type)
+        s3 = boto3.resource('s3')
+        s3.Bucket(S3_BUCKET).put_object(Key=filename, Body=file) 
+        file_url = f'https://{S3_BUCKET}.s3.amazonaws.com/{filename}'
+        # file.save(filepath)
         
         # Process the Excel file
-        data = pd.read_excel(r'' + filepath, header=4)
+        data = pd.read_excel(file_url, header=4)
         df = pd.DataFrame(data)
         
         # Your Python script logic on the data
         result = process_excel(df)  # Define this function based on your use case
+        result_filename = f"result_{study_code}_{dt_string}_{file.filename}"
+
+        with io.BytesIO() as output:
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                result.to_excel(writer)
+            data = output.getvalue()
+
+        s3 = boto3.resource('s3')
+        s3.Bucket(S3_BUCKET).put_object(Key=result_filename, Body=data)
+        return jsonify(
+        result_url=f'https://{S3_BUCKET}.s3.amazonaws.com/{result_filename}'
+    )
         
-        # Save the result to a new file (CSV or Excel)
-        result_filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'result.xlsx')
-        result.to_excel(result_filepath, index=False)
-        
-        # Send the file back to the user
-        return send_file(result_filepath, as_attachment=True)
 
 def process_excel(df):
     targetOvertimeFrequency = 0.2
