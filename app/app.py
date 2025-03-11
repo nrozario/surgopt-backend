@@ -49,8 +49,8 @@ def upload_file():
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
         MYDIR = os.path.dirname(__file__)
 
-
-        filename = f"{study_code}_{dt_string}_{file.filename}"
+        filename = ''.join(file.filename.split())
+        filename = f"{study_code}_{dt_string}_{filename}"
         # file_url = sign_s3(file, filename, file.content_type)
         s3 = boto3.resource('s3')
         s3.Bucket(S3_BUCKET).put_object(Key=filename, Body=file) 
@@ -63,7 +63,8 @@ def upload_file():
         
         # Your Python script logic on the data
         result = process_excel(df)  # Define this function based on your use case
-        result_filename = f"result_{study_code}_{dt_string}_{file.filename}"
+        result_filename = ''.join(file.filename.split())
+        result_filename = f"result_{study_code}_{dt_string}_{result_filename}"
 
         with io.BytesIO() as output:
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
