@@ -8,3 +8,4 @@ requests
 openpyxl
 xlsxwriter
 flask_cors
+xlrd
