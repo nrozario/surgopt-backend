@@ -259,7 +259,7 @@ def process_excel(df, params):
     # Print output to console and excel sheet
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
         print("Success!")
-        rows = ["Number of days", "Number of cases", "Original overtime frequency (%)", "Original undertime frequency (%)", "Model overtime frequency (%)",
+        rows = ["Parameters", "Number of days", "Number of cases", "Original overtime frequency (%)", "Original undertime frequency (%)", "Model overtime frequency (%)",
                 "Model undertime frequency (%)", "Model cases achieved (%)", "Original Overtime Minutes Used", "Model Overtime Minutes Used",
                 "Original Overtime Cost", "Model Overtime Cost", "Original OR minutes used (%)", "Model OR minutes used (%)", "", "Procedure Type"] + procedureTypes
 
@@ -272,6 +272,13 @@ def process_excel(df, params):
         # ------------------------------------------------------------------------------------
         # Output basic stats
         dashboard.at["", ""] = ""
+        dashboard.at["Parameters", "B"] = str({"targetOvertimeFrequency": targetOvertimeFrequency,
+                                               "targetUndertimeFrequency": targetUndertimeFrequency,
+                                               "undertimeCostWeight": undertimeCostWeight,
+                                               "overtimeCostWeight": overtimeCostWeight,
+                                               "overtimeBlockLength": overtimeBlockLength,
+                                               "noOfNursesPerBlock": noOfNursesPerBlock,
+                                               "overtimeSalary": overtimeSalary})        
         dashboard.at["Number of days", "B"] = count
         print("number of days: ", count)
         dashboard.at["Number of cases", "B"] = len(rawExpectedTimes)
