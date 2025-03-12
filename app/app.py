@@ -58,7 +58,7 @@ def upload_file():
         # file.save(filepath)
         
         # Process the Excel file
-        data = pd.read_excel(file_url, header=4)
+        data = pd.read_excel(file_url)
         df = pd.DataFrame(data)
         
         # Your Python script logic on the data
@@ -91,10 +91,10 @@ def process_excel(df):
     # ----------------------------------
     # Input data from excel sheet columns
 
-    dfP = df.get("Procedure").tolist()
-    dfD = df.get("Date").tolist()
-    dfE = df.get("Book Dur").tolist()
-    dfA = df.get("Actual Dur").tolist()
+    dfP = df.get("Unnamed: 2").tolist() # procedure code column
+    dfD = df.get("Unnamed: 0").tolist() # date column
+    dfE = df.get("Book Dur").tolist() # scheduled (expected) length column
+    dfA = df.get("Proc Len").tolist() # actual length column
 
     rawProcedures = [] # a list of each procedure performed
     procedureTypes = []  # a list of all the procedure codes
