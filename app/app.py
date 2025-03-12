@@ -66,6 +66,15 @@ def upload_file():
             
             # Your Python script logic on the data
             result = process_excel(df, params)  # Define this function based on your use case
+
+            if result == "No feasible solution found.":
+                response = {
+                    'status_code': 500,
+                    'status':  "No feasible solution found. Try again with less data" 
+                }
+                return jsonify(response), 500
+
+
             result_filename = ''.join(file.filename.split())
             result_filename = f"result_{study_code}_{dt_string}_{result_filename}"
 
@@ -369,6 +378,7 @@ def process_excel(df, params):
         return dashboard
     else:
         print("No feasible solution found.")
+        return "No feasible solution found."
 
 if __name__ == '__main__':
     app.run(debug=True)
