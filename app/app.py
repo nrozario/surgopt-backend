@@ -9,6 +9,7 @@ from datetime import datetime
 import boto3
 import requests
 import io
+import traceback
 
 
 app = Flask(__name__)
@@ -81,6 +82,7 @@ def upload_file():
                 result_url=f'https://{S3_BUCKET}.s3.amazonaws.com/{result_filename}'
             )
     except Exception as e:
+        print(traceback.format_exc())
         return jsonify(error=500, text=str(e)), 500
         
 
