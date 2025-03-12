@@ -31,53 +31,60 @@ def index():
 @app.route('/upload', methods=['POST'])
 @cross_origin()
 def upload_file():
-    print(request)
-    if 'file' not in request.files:
-        return 'No file in request'
-    
-    file = request.files['file']
-    
-    if file.filename == '':
-        return 'No selected file'
-    print(request.form)
-    if file:
-        study_code = "UNKNOWN"
-        if 'studyCode' in request.form:
-            study_code = request.form['studyCode']
-        params = {}
-        if 'parameters' in request.form:
-            params = eval(request.form['parameters'])
-        now = datetime.now()
-        dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-        MYDIR = os.path.dirname(__file__)
-
-        filename = ''.join(file.filename.split())
-        filename = f"{study_code}_{dt_string}_{filename}"
-        # file_url = sign_s3(file, filename, file.content_type)
-        s3 = boto3.resource('s3')
-        s3.Bucket(S3_BUCKET).put_object(Key=filename, Body=file) 
-        file_url = f'https://{S3_BUCKET}.s3.amazonaws.com/{filename}'
-        # file.save(filepath)
+    try:
+        print(request)
+        if 'file' not in request.files:
+            return 'No file in request'
         
-        # Process the Excel file
-        data = pd.read_excel(file_url)
-        df = pd.DataFrame(data)
+        file = request.files['file']
         
-        # Your Python script logic on the data
-        result = process_excel(df, params)  # Define this function based on your use case
-        result_filename = ''.join(file.filename.split())
-        result_filename = f"result_{study_code}_{dt_string}_{result_filename}"
+        if file.filename == '':
+            return 'No selected file'
+        print(request.form)
+        if file:
+            study_code = "UNKNOWN"
+            if 'studyCode' in request.form:
+                study_code = request.form['studyCode']
+            params = {}
+            if 'parameters' in request.form:
+                params = eval(request.form['parameters'])
+            now = datetime.now()
+            dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+            MYDIR = os.path.dirname(__file__)
 
-        with io.BytesIO() as output:
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                result.to_excel(writer)
-            data = output.getvalue()
+            filename = ''.join(file.filename.split())
+            filename = f"{study_code}_{dt_string}_{filename}"
+            # file_url = sign_s3(file, filename, file.content_type)
+            s3 = boto3.resource('s3')
+            s3.Bucket(S3_BUCKET).put_object(Key=filename, Body=file) 
+            file_url = f'https://{S3_BUCKET}.s3.amazonaws.com/{filename}'
+            # file.save(filepath)
+            
+            # Process the Excel file
+            data = pd.read_excel(file_url)
+            df = pd.DataFrame(data)
+            
+            # Your Python script logic on the data
+            result = process_excel(df, params)  # Define this function based on your use case
+            result_filename = ''.join(file.filename.split())
+            result_filename = f"result_{study_code}_{dt_string}_{result_filename}"
 
-        s3 = boto3.resource('s3')
-        s3.Bucket(S3_BUCKET).put_object(Key=result_filename, Body=data)
-        return jsonify(
-        result_url=f'https://{S3_BUCKET}.s3.amazonaws.com/{result_filename}'
-    )
+            with io.BytesIO() as output:
+                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                    result.to_excel(writer)
+                data = output.getvalue()
+
+            s3 = boto3.resource('s3')
+            s3.Bucket(S3_BUCKET).put_object(Key=result_filename, Body=data)
+            return jsonify(
+            result_url=f'https://{S3_BUCKET}.s3.amazonaws.com/{result_filename}'
+        )
+    except Exception as e:
+        response = {
+                'status_code': 500,
+                'status': e
+            }
+        return jsonify(response), 500
         
 
 def process_excel(df, params):
