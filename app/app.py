@@ -67,14 +67,6 @@ def upload_file():
             # Your Python script logic on the data
             result = process_excel(df, params)  # Define this function based on your use case
 
-            if result == "No feasible solution found.":
-                response = {
-                    'status_code': 500,
-                    'status':  "No feasible solution found. Try again with less data" 
-                }
-                return jsonify(response), 500
-
-
             result_filename = ''.join(file.filename.split())
             result_filename = f"result_{study_code}_{dt_string}_{result_filename}"
 
@@ -86,14 +78,10 @@ def upload_file():
             s3 = boto3.resource('s3')
             s3.Bucket(S3_BUCKET).put_object(Key=result_filename, Body=data)
             return jsonify(
-            result_url=f'https://{S3_BUCKET}.s3.amazonaws.com/{result_filename}'
-        )
+                result_url=f'https://{S3_BUCKET}.s3.amazonaws.com/{result_filename}'
+            )
     except Exception as e:
-        response = {
-                'status_code': 500,
-                'status': e
-            }
-        return jsonify(response), 500
+        return jsonify(error=500, text=str(e)), 500
         
 
 def process_excel(df, params):
@@ -117,11 +105,13 @@ def process_excel(df, params):
 
     # ----------------------------------
     # Input data from excel sheet columns
-
-    dfP = df.get("Unnamed: 2").tolist() # procedure code column
-    dfD = df.get("Unnamed: 0").tolist() # date column
-    dfE = df.get("Book Dur").tolist() # scheduled (expected) length column
-    dfA = df.get("Proc Len").tolist() # actual length column
+    try:
+        dfP = df.get("Unnamed: 2").tolist() # procedure code column
+        dfD = df.get("Unnamed: 0").tolist() # date column
+        dfE = df.get("Book Dur").tolist() # scheduled (expected) length column
+        dfA = df.get("Proc Len").tolist() # actual length column
+    except Exception as e:
+        raise Exception(f"Error parsing your inputted data file: {e}")
 
     rawProcedures = [] # a list of each procedure performed
     procedureTypes = []  # a list of all the procedure codes
@@ -378,7 +368,7 @@ def process_excel(df, params):
         return dashboard
     else:
         print("No feasible solution found.")
-        return "No feasible solution found."
+        raise Exception("No feasible solution found. Try again with less data.")
 
 if __name__ == '__main__':
     app.run(debug=True)
