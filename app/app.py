@@ -44,7 +44,9 @@ def upload_file():
         study_code = "UNKNOWN"
         if 'studyCode' in request.form:
             study_code = request.form['studyCode']
-
+        params = {}
+        if 'parameters' in request.form:
+            params = eval(request.form['parameters'])
         now = datetime.now()
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
         MYDIR = os.path.dirname(__file__)
@@ -62,7 +64,7 @@ def upload_file():
         df = pd.DataFrame(data)
         
         # Your Python script logic on the data
-        result = process_excel(df)  # Define this function based on your use case
+        result = process_excel(df, params)  # Define this function based on your use case
         result_filename = ''.join(file.filename.split())
         result_filename = f"result_{study_code}_{dt_string}_{result_filename}"
 
@@ -78,7 +80,7 @@ def upload_file():
     )
         
 
-def process_excel(df):
+def process_excel(df, params):
     targetOvertimeFrequency = 0.2
     targetUndertimeFrequency = 0
     undertimeCostWeight = 1
@@ -87,6 +89,15 @@ def process_excel(df):
     overtimeBlockLength = 15 # length of overtime blocks in minutes
     noOfNursesPerBlock = 2.5 # number of nurses per overtime block
     overtimeSalary = 75 # pay by block for overtime nurses
+    if params:
+        targetOvertimeFrequency = params['targetOvertimeFreq']
+        targetUndertimeFrequency = params['targetUndertimeFreq']
+        undertimeCostWeight = params['undertimeCostWeight']
+        overtimeCostWeight = params['overtimeCostWeight']
+
+        overtimeBlockLength = params['overtimeBlockLength']
+        noOfNursesPerBlock = params['nursesPerBlock']
+        overtimeSalary = params['nurseOvertimeSalary']
 
     # ----------------------------------
     # Input data from excel sheet columns
