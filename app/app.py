@@ -152,14 +152,15 @@ def process_excel(df, params):
     # ----------------------------------
     # Pre-processing
 
-    originalBookTimes = {p: 0 for p in procedureTypes} # a map with average booking times for each procedue
+    originalBookTimes = {p: {"avg_booking_time": 0, "count": 0} for p in procedureTypes} # a map with average booking times + counts for each procedure
     for p in procedureTypes:
         counter = 0
         for i in range(len(rawDays)):
             if p == rawProcedures[i]:
                 counter += 1
-                originalBookTimes[p] += rawExpectedTimes[i]
-        originalBookTimes[p] = int(originalBookTimes[p] / counter)
+                originalBookTimes[p]["avg_booking_time"] += rawExpectedTimes[i]
+        originalBookTimes[p]["avg_booking_time"] = int(originalBookTimes[p]["avg_booking_time"] / counter)
+        originalBookTimes[p]["count"] = counter
 
     expectedTotalTime = {}  # a map from a day to the sum of booking times for that day
     for day in days:
@@ -326,10 +327,12 @@ def process_excel(df, params):
         # Output original and machine learning scheduling times for each procedure
         dashboard.at["Procedure Type", "B"] = "Original Time"
         dashboard.at["Procedure Type", "C"] = "Machine Learning Time"
+        dashboard.at["Procedure Type", "D"] = "# of procedures in original data"
         for p in procedureTypes:
             print(p + ": " + "%d" % solver.Value(procedureSchedulingTimes[p]))
-            dashboard.at[p, "B"] = originalBookTimes[p]
+            dashboard.at[p, "B"] = originalBookTimes[p]["avg_booking_time"]
             dashboard.at[p, "C"] = solver.Value(procedureSchedulingTimes[p])
+            dashboard.at[p, "D"] = originalBookTimes[p]["count"]
 
         # ------------------------------------------------------------------------------------
         # Output cases completed with model and OR minutes used by original and machine learning methods
