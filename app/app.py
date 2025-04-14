@@ -265,14 +265,14 @@ def process_excel(df, params):
                 "Original Overtime Cost", "Model Overtime Cost", "Original OR minutes used (%)", "Model OR minutes used (%)", "", "Procedure Type"] + procedureTypes
 
         dashboard = pd.DataFrame(index=rows,
-                                columns=["A", "B", "C", ])
+                                columns=["A", "B", "C", "D"])
 
         for r in rows:
             dashboard.at[r, "A"] = r
 
         # ------------------------------------------------------------------------------------
         # Output basic stats
-        dashboard.at["", ""] = ""
+        # dashboard.at["", ""] = ""
         dashboard.at["Parameters", "B"] = str({"targetOvertimeFrequency": targetOvertimeFrequency,
                                                "targetUndertimeFrequency": targetUndertimeFrequency,
                                                "undertimeCostWeight": undertimeCostWeight,
