@@ -272,7 +272,7 @@ def process_excel(df, params):
 
         # ------------------------------------------------------------------------------------
         # Output basic stats
-        # dashboard.at["", ""] = ""
+        dashboard.at["", ""] = ""
         dashboard.at["Parameters", "B"] = str({"targetOvertimeFrequency": targetOvertimeFrequency,
                                                "targetUndertimeFrequency": targetUndertimeFrequency,
                                                "undertimeCostWeight": undertimeCostWeight,
