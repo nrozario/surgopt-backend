@@ -260,7 +260,7 @@ def process_excel(df, params):
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
         print("Success!")
         rows = ["Parameters", "Number of days", "Number of cases", "Original overtime frequency (%)", "Original undertime frequency (%)", "Model overtime frequency (%)",
-                "Model undertime frequency (%)", "Model cases achieved (%)", "Original Overtime Minutes Used", "Model Overtime Minutes Used",
+                "Model undertime frequency (%)", "Model cases achieved on-time (%)", "Original Overtime Minutes Used", "Model Overtime Minutes Used",
                 "Original Overtime Cost", "Model Overtime Cost", "Original OR minutes used (%)", "Model OR minutes used (%)", "", "Procedure Type"] + procedureTypes
 
         dashboard = pd.DataFrame(index=rows,
@@ -368,8 +368,8 @@ def process_excel(df, params):
                     if modelTime > 0:
                         break
 
-        print("Cases achieved with machine learning model: %.0f%%" % (100 * modelCases / totalNoCases))
-        dashboard.at["Model cases achieved (%)", "B"] =  100 * round(modelCases / totalNoCases, 2)
+        print("Cases achieved on-time with machine learning model: %.0f%%" % (100 * modelCases / totalNoCases))
+        dashboard.at["Model cases achieved on-time (%)", "B"] =  100 * round(modelCases / totalNoCases, 2)
         print("OR minutes used with original model: %.0f%%" % (100 * originalMinutes / totalMinutes))
         dashboard.at["Original OR minutes used (%)", "B"] =  100 * round(originalMinutes / totalMinutes, 2)
         print("OR minutes used with machine learning model: %.0f%%" % (100 * modelMinutes / totalMinutes))
